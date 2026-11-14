@@ -36,6 +36,7 @@ API_KEY_FILENAME = "h3_gateway_api_key.txt"
 REGISTRATION_URL = "https://h3.oneclickamd.ai"
 MODEL = "MiniMax-H3-Image"
 ASPECT_RATIOS = ["1:1", "16:9", "9:16", "4:3", "3:4", "21:9"]
+SIZES = ["1K", "2K"]
 MAX_REFERENCE_IMAGES = 3
 MAX_PROMPT_LENGTH = 8000
 FAILED_STATUSES = ["failed", "cancelled"]
@@ -46,6 +47,7 @@ class TaskCreationRequest(BaseModel):
     content: list[Hailuo03TextContent | Hailuo03ImageContent]
     aspect_ratio: str
     seed: int
+    quality: str | None = None
 
 
 def api_key_file() -> str:
@@ -93,7 +95,8 @@ class AMDMiniMaxH3Image(IO.ComfyNode):
                     "aspect_ratio",
                     options=ASPECT_RATIOS,
                     default="1:1",
-                    tooltip="Aspect ratio of the output image. Every size is about one megapixel.",
+                    tooltip="Aspect ratio of the output image. Edits are reframed to it rather than keeping "
+                    "the shape of the reference images.",
                 ),
                 IO.Int.Input(
                     "seed",
@@ -116,13 +119,23 @@ class AMDMiniMaxH3Image(IO.ComfyNode):
                     tooltip="Optional reference images to edit or combine, referred to in the prompt as "
                     f"@Image1..@Image{MAX_REFERENCE_IMAGES} in connection order. Up to {MAX_REFERENCE_IMAGES}.",
                 ),
+                # Last, so workflows saved before this input existed keep their widget values in place.
+                IO.Combo.Input(
+                    "size",
+                    options=SIZES,
+                    default="1K",
+                    tooltip="1K is about 1MP (1024x1024 at 1:1) for 4 credits. 2K is about 4MP (2048x2048 at "
+                    "1:1, 2688x1536 at 16:9) for 16 credits. Both apply to edits too.",
+                ),
             ],
             outputs=[IO.Image.Output()],
             hidden=[IO.Hidden.unique_id],
         )
 
     @classmethod
-    async def execute(cls, prompt: str, aspect_ratio: str, seed: int, images: dict = None) -> IO.NodeOutput:
+    async def execute(
+        cls, prompt: str, aspect_ratio: str, seed: int, size: str, images: dict = None
+    ) -> IO.NodeOutput:
         # The gateway requires exactly one non-empty text item even when reference images are supplied.
         validate_string(prompt, strip_whitespace=True, min_length=1, max_length=MAX_PROMPT_LENGTH)
         # A slot can carry a batch, and every frame in it counts as its own reference image.
@@ -159,6 +172,7 @@ class AMDMiniMaxH3Image(IO.ComfyNode):
                 ],
                 aspect_ratio=aspect_ratio,
                 seed=seed,
+                quality="hd" if size == "2K" else None,
             ),
         )
         task_result = await poll_op(

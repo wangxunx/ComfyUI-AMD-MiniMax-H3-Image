@@ -55,7 +55,7 @@ Two Windows details: if File Explorer hides known extensions, **New > Text Docum
 
 | Node | Inputs |
 |---|---|
-| AMD MiniMax H3 Image | `prompt`, `aspect_ratio` (six ratios), `seed`, `images` (0-3 reference images) |
+| AMD MiniMax H3 Image | `prompt`, `aspect_ratio` (six ratios), `seed`, `images` (0-3 reference images), `size` (`1K` or `2K`) |
 
 One node covers both tasks. Connect nothing to `images` and it generates from the prompt alone;
 connect one to three reference images and the same node edits or combines them. A prompt is always
@@ -65,23 +65,23 @@ Refer to the references in the prompt by connection order: `@Image1`, `@Image2`,
 same convention as ComfyUI's built-in MiniMax H3 nodes. Referencing an image that is not connected
 fails before anything is sent.
 
-Every `aspect_ratio` renders at about one megapixel, for example 1024x1024 or 1344x768 for 16:9.
-It applies to edits too: the output is reframed to it rather than keeping the shape of the reference
-images. Steps and guidance are fixed by the gateway, and negative prompts are not supported, so the
+`size` sets the resolution: `1K` is about 1MP, for example 1024x1024 or 1344x768 for 16:9; `2K` is
+about 4MP, for example 2048x2048 or 2688x1536 for 16:9. Both apply to edits too, and the output is
+reframed to `aspect_ratio` rather than keeping the shape of the reference images. Steps and guidance are fixed by the gateway, and negative prompts are not supported, so the
 node has no inputs for them.
 
 The same prompt, settings and `seed` give the same image. `seed` changes after every run, like
 KSampler's; set its control to `fixed` to keep a seed. When editing an image you generated, use a
 different seed from the one that made it: the same noise sharpens the image on every pass.
 
-Each image costs 4 credits. Text to image and single-image edits usually take 15 to 30 seconds. The first request at a resolution the backend has not served before takes noticeably longer because it compiles convolution kernels on the spot; that path is slow, not failing.
+Each image costs 4 credits at `1K` and 16 credits at `2K`. Text to image and single-image edits usually take 15 to 30 seconds. The first request at a resolution the backend has not served before takes noticeably longer because it compiles convolution kernels on the spot; that path is slow, not failing.
 
 ### Differences from the built-in MiniMax H3 Image node
 
 | | Built-in partner node | This node |
 |---|---|---|
 | Models | `MiniMax-H3-Image`, `MiniMax-H3-Image-Highspeed` | `MiniMax-H3-Image` |
-| Size | 2K, 4K or custom, ratio can be `auto` | six fixed ratios, about 1MP |
+| Size | 2K, 4K or custom, ratio can be `auto` | 1K or 2K, six fixed ratios |
 | Reference images | up to 16 | up to 3 |
 | Prompt enhancement, `revised_prompt` output | yes | no |
 | Seed | re-run trigger only | reproducible |
