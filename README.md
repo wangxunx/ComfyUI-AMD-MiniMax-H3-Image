@@ -22,24 +22,17 @@ Restart ComfyUI. No extra Python dependencies are required. ComfyUI 0.44.0 or ne
 
 ## Configure your API key
 
-Register at https://h3.oneclickamd.ai to get a key, then use either method below. This is a one-time setup per machine and applies to every workflow:
-
-- Save the key to `h3_gateway_api_key.txt` in the ComfyUI user directory
-- Or set the `H3_GATEWAY_API_KEY` environment variable
+Register at https://h3.oneclickamd.ai to get a key, then save it to `h3_gateway_api_key.txt` in the ComfyUI user directory. This is a one-time setup per machine and applies to every workflow.
 
 MiniMax H3 Image needs a personal API key from the Account page. The gateway's shared key is refused with a permission error for this model.
 
-The file is read on every run, so dropping it in takes effect without restarting. The environment variable is read from the server process, so changing it needs a restart.
+The file is read on every run, so dropping it in takes effect without restarting.
 
 If the key is missing, the node fails immediately and tells you the registration URL and the exact file path it looked at.
 
 The gateway serves its image and video models from one account, so a personal key already configured for [ComfyUI-AMD-MiniMaxH3](https://github.com/wangxunx/ComfyUI-AMD-MiniMaxH3) or [ComfyUI-AMD-Qwen-Image-2.1](https://github.com/wangxunx/ComfyUI-AMD-Qwen-Image-2.1) works here with no further setup.
 
-To point the node at a different gateway, set `H3_GATEWAY_BASE_URL`.
-
 ### Windows, with the ComfyUI Desktop app
-
-Use the file rather than the environment variable. Desktop launches from the Start menu and does not inherit variables you set in a PowerShell or Command Prompt session, so setting one there has no effect. Making it stick would mean `setx` or the System Properties dialog plus a full restart of Desktop.
 
 Desktop keeps the user directory at `user` inside its install folder. That folder moves between Desktop versions and depends on what you picked during setup, so the reliable way to find it is to run the node once with no key: the error names the exact file it looked for. On one Windows install it is
 
@@ -97,7 +90,7 @@ In ComfyUI, open the template browser from the left sidebar, scroll to the **EXT
 
 ## Your API key never enters a workflow
 
-The node deliberately has no `api_key` widget. Widget values are serialized into workflow JSON and embedded into output image metadata, which would leak the key as soon as a workflow or a generated image is shared. Reading the key from the environment or from a file outside the graph keeps it out of both.
+The node deliberately has no `api_key` widget. Widget values are serialized into workflow JSON and embedded into output image metadata, which would leak the key as soon as a workflow or a generated image is shared. Reading the key from a file outside the graph keeps it out of both.
 
 ## License
 

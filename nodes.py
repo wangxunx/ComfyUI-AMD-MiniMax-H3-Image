@@ -3,8 +3,8 @@
 The gateway issues one API key per registered user, so the key must never become part of a
 workflow: widget values are serialized into workflow JSON and embedded into output file metadata,
 which would leak every user's key as soon as they share a workflow or a generated image. The key
-and the gateway URL are therefore read from the environment or from a file in the ComfyUI user
-directory, leaving only the creative parameters in the graph.
+is therefore read from a file in the ComfyUI user directory, leaving only the creative parameters
+in the graph.
 """
 
 import os
@@ -29,9 +29,7 @@ from comfy_api_nodes.util import (
 )
 from pydantic import BaseModel
 
-DEFAULT_BASE_URL = "https://h3.oneclickamd.ai"
-BASE_URL_ENV_VAR = "H3_GATEWAY_BASE_URL"
-API_KEY_ENV_VAR = "H3_GATEWAY_API_KEY"
+BASE_URL = "https://h3.oneclickamd.ai"
 API_KEY_FILENAME = "h3_gateway_api_key.txt"
 REGISTRATION_URL = "https://h3.oneclickamd.ai"
 MODEL = "MiniMax-H3-Image"
@@ -55,20 +53,16 @@ def api_key_file() -> str:
 
 
 def resolve_api_key() -> str:
-    key = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    if not key and os.path.isfile(api_key_file()):
+    key = ""
+    if os.path.isfile(api_key_file()):
         with open(api_key_file(), encoding="utf-8") as f:
             key = f.read().strip()
     if not key:
         raise Exception(
-            f"No API key configured. Register at {REGISTRATION_URL} to get one, then either set the "
-            f"{API_KEY_ENV_VAR} environment variable or save the key to {api_key_file()}."
+            f"No API key configured. Register at {REGISTRATION_URL} to get one, then save the key to "
+            f"{api_key_file()}."
         )
     return key
-
-
-def resolve_base_url() -> str:
-    return os.environ.get(BASE_URL_ENV_VAR, DEFAULT_BASE_URL).rstrip("/")
 
 
 class AMDMiniMaxH3Image(IO.ComfyNode):
@@ -81,8 +75,8 @@ class AMDMiniMaxH3Image(IO.ComfyNode):
             description="Generate images from text, or edit and combine up to 3 reference images, with "
             "MiniMax H3-Image on the AMD gateway. Refer to the references in the prompt by their order: "
             "@Image1, @Image2, @Image3. "
-            f"Requires an account: register at {REGISTRATION_URL}, then set the {API_KEY_ENV_VAR} "
-            f"environment variable or save your key to {API_KEY_FILENAME} in the ComfyUI user directory.",
+            f"Requires an account: register at {REGISTRATION_URL}, then save your key to "
+            f"{API_KEY_FILENAME} in the ComfyUI user directory.",
             inputs=[
                 IO.String.Input(
                     "prompt",
@@ -145,14 +139,13 @@ class AMDMiniMaxH3Image(IO.ComfyNode):
                 f"MiniMax H3 Image accepts up to {MAX_REFERENCE_IMAGES} reference images, got {len(frames)}."
             )
         prompt = _hailuo03_resolve_ref_tags(prompt, {"image": len(frames)})
-        root = resolve_base_url()
         headers = {"Authorization": f"Bearer {resolve_api_key()}"}
         # Images go through the video paths: the gateway is wire-compatible with the MiniMax API,
         # where "video" in the path is fixed. The model field decides what comes back. Steps and
         # guidance are pinned by the gateway, which refuses any explicit value, so they are left out.
         response = await sync_op(
             cls,
-            ApiEndpoint(path=f"{root}/v2/video_generation", method="POST", headers=headers),
+            ApiEndpoint(path=f"{BASE_URL}/v2/video_generation", method="POST", headers=headers),
             response_model=Hailuo03TaskCreationResponse,
             data=TaskCreationRequest(
                 model=MODEL,
@@ -177,7 +170,7 @@ class AMDMiniMaxH3Image(IO.ComfyNode):
         )
         task_result = await poll_op(
             cls,
-            ApiEndpoint(path=f"{root}/v2/query/video_generation/{response.task_id}", headers=headers),
+            ApiEndpoint(path=f"{BASE_URL}/v2/query/video_generation/{response.task_id}", headers=headers),
             response_model=Hailuo03TaskQueryResponse,
             status_extractor=lambda r: r.task.status,
             failed_statuses=FAILED_STATUSES,
