@@ -92,7 +92,7 @@ In ComfyUI, open the template browser from the left sidebar, scroll to the **EXT
 
 | Workflow | What it does |
 |---|---|
-| `AMD MiniMax H3 Image Text to Image` | Generates from a prompt |
+| `AMD MiniMax H3 Image Text to Image` | Generates a backlit 2K portrait from a detailed prompt that spells out the framing, light and focus. One run costs 16 credits; switch `size` to `1K` for 4-credit drafts |
 | `AMD MiniMax H3 Image Edit` | Generates a street portrait, then restages it as a snowy neon night by referring to it as `@Image1`. Replace the first node with **Load Image** to edit your own photo. One run costs 8 credits |
 
 ## Your API key never enters a workflow
