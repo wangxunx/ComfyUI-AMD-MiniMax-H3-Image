@@ -31,7 +31,7 @@ from pydantic import BaseModel
 
 BASE_URL = "https://h3.oneclickamd.ai"
 API_KEY_FILENAME = "h3_gateway_api_key.txt"
-REGISTRATION_URL = "https://h3.oneclickamd.ai"
+REGISTRATION_URL = "https://h3.oneclickamd.ai/?utm_source=comfyui"
 MODEL = "MiniMax-H3-Image"
 ASPECT_RATIOS = ["1:1", "16:9", "9:16", "4:3", "3:4", "21:9"]
 SIZES = ["1K", "2K"]

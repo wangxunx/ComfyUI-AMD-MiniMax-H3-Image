@@ -22,7 +22,7 @@ Restart ComfyUI. No extra Python dependencies are required. ComfyUI 0.44.0 or ne
 
 ## Configure your API key
 
-Register at https://h3.oneclickamd.ai to get a key, then save it to `h3_gateway_api_key.txt` in the ComfyUI user directory. This is a one-time setup per machine and applies to every workflow.
+Register at https://h3.oneclickamd.ai/?utm_source=comfyui to get a key, then save it to `h3_gateway_api_key.txt` in the ComfyUI user directory. This is a one-time setup per machine and applies to every workflow.
 
 MiniMax H3 Image needs a personal API key from the Account page. The gateway's shared key is refused with a permission error for this model.
 
